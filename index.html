@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donut Progress Bar</title>
+    <style>
+        body {
+            background-color: black;
+            color: yellow;
+        }
+        .progress-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        .progress-circle {
+            width: 160px;
+            height: 160px;
+        }
+        .circle-bg, .circle-progress {
+            fill: none;
+            stroke-width: 10;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            stroke-linecap: round;
+        }
+        .circle-bg {
+            stroke: #1a1d20;
+        }
+        .circle-progress {
+            stroke: darkred;
+            stroke-dasharray: 440;
+            stroke-dashoffset: 440;
+        }
+        @keyframes progress-animation {
+            from {
+                stroke-dashoffset: 440;
+            }
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+        .progress-text {
+            font-family: monospace;
+            font-size: 72px;
+            fill: yellow;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress-container">
+    <svg class="progress-circle" viewBox="0 0 160 160">
+        <circle cx="80" cy="80" r="70" class="circle-bg"></circle>
+        <circle cx="80" cy="80" r="70" class="circle-progress"></circle>
+        <text id="countdown" x="80" y="80" class="progress-text"></text>
+    </svg>
+</div>
+
+<script>
+    // Get the 'time' parameter from the URL, defaulting to 1500 seconds if not provided
+    const urlParams = new URLSearchParams(window.location.search);
+    let totalTime = parseInt(urlParams.get('time')) || 1500;
+
+    document.querySelector('.circle-progress').style.animation = `progress-animation ${totalTime}s linear forwards`;
+
+    let countdownElement = document.getElementById('countdown');
+
+    function updateCountdown(timeLeft) {
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+        countdownElement.textContent =
+            (minutes < 10 ? '0' : '') + minutes;
+            //+ ":" + (seconds < 10 ? '0' : '') + seconds;
+    }
+
+    let timer = setInterval(() => {
+        totalTime--;
+        updateCountdown(totalTime);
+        if (totalTime <= 0) {
+            clearInterval(timer);
+        }
+    }, 1000);
+    updateCountdown(totalTime); // Initial call
+</script>
+
+</body>
+</html>
