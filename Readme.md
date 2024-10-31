@@ -2,7 +2,7 @@
 
 ## Live Demo
 
-- [15min](ttps://k0pernikus.github.io/pomodoro/?time=15min)
+- [15min](https://k0pernikus.github.io/pomodoro/?time=15min)
 - [25min](https://k0pernikus.github.io/pomodoro/?time=25min)
 - [45min](https://k0pernikus.github.io/pomodoro/?time=45min)
 - [60min](https://k0pernikus.github.io/pomodoro/?time=60min)
