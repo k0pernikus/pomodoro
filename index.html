@@ -1,10 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
+
 <head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pomodoro</title>
     <style>
+        @media (prefers-color-scheme: dark) {
+            color: #fff;
+            background: #000;
+        }
+
         body {
             background-color: black;
             color: yellow;
@@ -37,7 +49,6 @@
         }
 
         .circle-progress {
-
             stroke-dasharray: 440;
             stroke-dashoffset: 440;
         }
@@ -61,106 +72,140 @@
 </head>
 <body>
 
+<div class="modal fade" id="start-window" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Pomodoro</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="startCountdown()">Start Countdown</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="progress-container">
     <svg class="progress-circle" viewBox="0 0 160 160">
-        <circle cx="80" cy="80" r="70" class="circle-bg" stroke="#1a1d20"></circle>
-        <circle cx="80" cy="80" r="70" class="circle-progress" stroke="darkred"></circle>
+        <circle cx="80" cy="80" r="70" class="circle-bg" stroke="darkred"></circle>
+        <circle cx="80" cy="80" r="70" class="circle-progress" stroke="#1a1d20"></circle>
         <text id="countdown" x="80" y="80" class="progress-text"></text>
     </svg>
 </div>
 
 <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    let totalTime = urlParams.get('time');
-
-    let match = totalTime.match(/(\d+\.?\d*)\s*(\w*)/);
-
-    let timeValue = parseInt(match[1]);
-    let timeUnit = match[2].toLowerCase().trim();
-
-    switch (timeUnit) {
-        case 'm':
-        case 'min':
-        case 'minute':
-        case 'minutes':
-            timeValue *= 60;
-            break;
-        case 'h':
-        case 'hr':
-        case 'hour':
-        case 'hours':
-            timeValue *= 60 * 60;
-            break;
-        case 'd':
-        case 'day':
-        case 'days':
-            timeValue *= 60 * 60 * 24;
-            break;
-        default:
-            console.warn(
-                "Unsupported time unit",
-                timeUnit,
-                'assume seconds'
-            )
+    let modal = null;
+    window.onload = () => {
+        modal = new bootstrap.Modal('#start-window');
+        modal.show();
     }
+    const startCountdown = () => {
+        modal.hide();
+        const alarm = document.createElement('audio');
+        alarm.setAttribute('src', '/audio/640368__dan2008__calm-alarm.wav');
+        alarm.setAttribute('loop', 'true');
 
-    totalTime = timeValue;
+        const urlParams = new URLSearchParams(window.location.search);
+        let totalTime = urlParams.get('time');
+
+        let match = totalTime.match(/(\d+\.?\d*)\s*(\w*)/);
+
+        let timeValue = parseInt(match[1]);
+        let timeUnit = match[2].toLowerCase().trim();
+
+        switch (timeUnit) {
+            case 'm':
+            case 'min':
+            case 'minute':
+            case 'minutes':
+                timeValue *= 60;
+                break;
+            case 'h':
+            case 'hr':
+            case 'hour':
+            case 'hours':
+                timeValue *= 60 * 60;
+                break;
+            case 'd':
+            case 'day':
+            case 'days':
+                timeValue *= 60 * 60 * 24;
+                break;
+            default:
+                console.warn(
+                    "Unsupported time unit",
+                    timeUnit,
+                    'assume seconds'
+                )
+        }
+
+        totalTime = timeValue;
 
 
-    document
-        .querySelector('.circle-progress')
-        .style
-        .animation = `progress-animation ${totalTime}s linear forwards`;
+        document
+            .querySelector('.circle-progress')
+            .style
+            .animation = `progress-animation ${totalTime}s linear forwards`;
 
-    let countdownElement = document
-        .getElementById('countdown');
+        let countdownElement = document
+            .getElementById('countdown');
 
-    function updateCountdown(timeLeft) {
-        let minutes = Math.floor(timeLeft / 60);
-        countdownElement.textContent = minutes.toString();
-    }
+        function updateCountdown(timeLeft) {
+            let minutes = Math.floor(timeLeft / 60);
+            countdownElement.textContent = minutes.toString();
+        }
 
-    let timer = setInterval(() => {
-        totalTime--;
+        let timer = setInterval(() => {
+            totalTime--;
+            updateCountdown(totalTime);
+            if (totalTime <= 0) {
+                alarm.play();
+                clearInterval(timer);
+            }
+        }, 1e3);
         updateCountdown(totalTime);
-        if (totalTime <= 0) {
-            clearInterval(timer);
+
+        function getSize(length) {
+            if (length === 3) {
+                return 4;
+            }
+
+            if (length === 4) {
+                return 3;
+            }
+
+            if (length > 4) {
+                return 2;
+            }
+
+            return 6;
         }
-    }, 1000);
-    updateCountdown(totalTime);
 
-    function getSize(length) {
-        let size = 6;
-        if (length === 3) {
-            size = 4;
-        } else if (length === 4) {
-            size = 3;
-        } else if (length > 4) {
-            size = 2;
+        function getLength() {
+            return Math.round(totalTime / 60).toString().length;
         }
-        return size;
-    }
 
-    function getLength() {
-        const element = document.querySelector('.progress-text');
-        const length = Math.round(totalTime / 60).toString().length;
-        return {element, length};
-    }
+        function adjustSVG() {
+            const svg = document.querySelector('.progress-circle');
+            const element = document.querySelector('.progress-text');
 
-    function adjustSVG() {
-        const svg = document.querySelector('.progress-circle');
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        const svgSize = Math.min(width, height) * 0.8;
-        svg.setAttribute('width', svgSize.toString());
-        svg.setAttribute('height', svgSize.toString());
-        const {element, length} = getLength();
-        const size = getSize(length);
-        element.style.fontSize = `${size}rem`;
-    }
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const svgSize = Math.min(width, height) * 0.8;
 
-    window.addEventListener('resize', adjustSVG);
-    adjustSVG();
+            const length = getLength();
+            const size = getSize(length);
+
+            svg.setAttribute('width', svgSize.toString());
+            svg.setAttribute('height', svgSize.toString());
+
+            element.style.fontSize = `${size}rem`;
+        }
+
+        window.addEventListener('resize', adjustSVG);
+        adjustSVG();
+    }
 </script>
 
 </body>

@@ -1,5 +1,7 @@
 # Pomodoro Time
 
+
+
 ## Live Demo
 
 - [15min](https://k0pernikus.github.io/pomodoro/?time=15min)
@@ -33,3 +35,10 @@ Hours could be:
 
 - [ ] Allow custom colors
 - [ ] Allow custom fonts
+
+### Attribution
+
+- `audio/640368__dan2008__calm-alarm.wav`
+- audio sound for "Calm Alarm" form created by DAN2008
+  - https://freesound.org/people/DAN2008/sounds/640368/
+  - under [Creative Commons 0 license](https://creativecommons.org/publicdomain/zero/1.0/)
