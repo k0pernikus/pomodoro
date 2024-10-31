@@ -3,38 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Donut Progress Bar</title>
+    <title>Pomodoro</title>
     <style>
         body {
             background-color: black;
             color: yellow;
+            margin: 0;
+            overflow: hidden;
         }
+
         .progress-container {
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            flex-direction: column;
+            width: 100vw;
         }
+
         .progress-circle {
-            width: 160px;
-            height: 160px;
+            width: 100%;
+            height: 100%;
         }
+
         .circle-bg, .circle-progress {
             fill: none;
             stroke-width: 10;
             transform: rotate(-90deg);
             transform-origin: 50% 50%;
-            stroke-linecap: round;
+            stroke-linecap: butt;
         }
+
         .circle-bg {
-            stroke: #1a1d20;
         }
+
         .circle-progress {
-            stroke: darkred;
+
             stroke-dasharray: 440;
             stroke-dashoffset: 440;
         }
+
         @keyframes progress-animation {
             from {
                 stroke-dashoffset: 440;
@@ -43,9 +50,9 @@
                 stroke-dashoffset: 0;
             }
         }
+
         .progress-text {
             font-family: monospace;
-            font-size: 72px;
             fill: yellow;
             text-anchor: middle;
             dominant-baseline: middle;
@@ -56,27 +63,61 @@
 
 <div class="progress-container">
     <svg class="progress-circle" viewBox="0 0 160 160">
-        <circle cx="80" cy="80" r="70" class="circle-bg"></circle>
-        <circle cx="80" cy="80" r="70" class="circle-progress"></circle>
+        <circle cx="80" cy="80" r="70" class="circle-bg" stroke="#1a1d20"></circle>
+        <circle cx="80" cy="80" r="70" class="circle-progress" stroke="darkred"></circle>
         <text id="countdown" x="80" y="80" class="progress-text"></text>
     </svg>
 </div>
 
 <script>
-    // Get the 'time' parameter from the URL, defaulting to 1500 seconds if not provided
     const urlParams = new URLSearchParams(window.location.search);
-    let totalTime = parseInt(urlParams.get('time')) || 1500;
+    let totalTime = urlParams.get('time');
 
-    document.querySelector('.circle-progress').style.animation = `progress-animation ${totalTime}s linear forwards`;
+    let match = totalTime.match(/(\d+\.?\d*)\s*(\w*)/);
 
-    let countdownElement = document.getElementById('countdown');
+    let timeValue = parseInt(match[1]);
+    let timeUnit = match[2].toLowerCase().trim();
+
+    switch (timeUnit) {
+        case 'm':
+        case 'min':
+        case 'minute':
+        case 'minutes':
+            timeValue *= 60;
+            break;
+        case 'h':
+        case 'hr':
+        case 'hour':
+        case 'hours':
+            timeValue *= 60 * 60;
+            break;
+        case 'd':
+        case 'day':
+        case 'days':
+            timeValue *= 60 * 60 * 24;
+            break;
+        default:
+            console.warn(
+                "Unsupported time unit",
+                timeUnit,
+                'assume seconds'
+            )
+    }
+
+    totalTime = timeValue;
+
+
+    document
+        .querySelector('.circle-progress')
+        .style
+        .animation = `progress-animation ${totalTime}s linear forwards`;
+
+    let countdownElement = document
+        .getElementById('countdown');
 
     function updateCountdown(timeLeft) {
         let minutes = Math.floor(timeLeft / 60);
-        let seconds = timeLeft % 60;
-        countdownElement.textContent =
-            (minutes < 10 ? '0' : '') + minutes;
-            //+ ":" + (seconds < 10 ? '0' : '') + seconds;
+        countdownElement.textContent = minutes.toString();
     }
 
     let timer = setInterval(() => {
@@ -86,7 +127,40 @@
             clearInterval(timer);
         }
     }, 1000);
-    updateCountdown(totalTime); // Initial call
+    updateCountdown(totalTime);
+
+    function getSize(length) {
+        let size = 6;
+        if (length === 3) {
+            size = 4;
+        } else if (length === 4) {
+            size = 3;
+        } else if (length > 4) {
+            size = 2;
+        }
+        return size;
+    }
+
+    function getLength() {
+        const element = document.querySelector('.progress-text');
+        const length = Math.round(totalTime / 60).toString().length;
+        return {element, length};
+    }
+
+    function adjustSVG() {
+        const svg = document.querySelector('.progress-circle');
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const svgSize = Math.min(width, height) * 0.8;
+        svg.setAttribute('width', svgSize.toString());
+        svg.setAttribute('height', svgSize.toString());
+        const {element, length} = getLength();
+        const size = getSize(length);
+        element.style.fontSize = `${size}rem`;
+    }
+
+    window.addEventListener('resize', adjustSVG);
+    adjustSVG();
 </script>
 
 </body>
