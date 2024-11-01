@@ -152,8 +152,27 @@
             .getElementById('countdown');
 
         function updateCountdown(timeLeft) {
-            let minutes = Math.floor(timeLeft / 60);
-            countdownElement.textContent = minutes.toString();
+            const min = 60;
+            const max = 120 * 60;
+
+            if (timeLeft <= min) {
+                countdownElement.textContent = timeLeft.toString() + "s";
+            } else if (timeLeft < max) {
+                console.log('first');
+                let minutes = Math.floor(timeLeft / 60);
+                countdownElement.textContent = minutes.toString();
+            } else if (timeLeft >= max) {
+                console.log('what');
+                let hours = Math.floor(timeLeft / 3600);
+                let minutes = Math.floor((timeLeft % 3600) / 60);
+
+                countdownElement.textContent =
+                    hours.toString().padStart(2, '0')
+                    + ":"
+                    + minutes.toString().padStart(2, '0');
+            }
+
+            window.dispatchEvent(new Event('resize'));
         }
 
         let timer = setInterval(() => {
@@ -166,45 +185,43 @@
         }, 1e3);
         updateCountdown(totalTime);
 
-        function getSize(length) {
-            if (length === 3) {
+        function getFontSize(textLength) {
+            if (textLength === 3) {
                 return 4;
             }
 
-            if (length === 4) {
+            if (textLength === 4) {
                 return 3;
             }
 
-            if (length > 4) {
+            if (textLength > 4) {
                 return 2;
             }
 
             return 6;
         }
 
-        function getLength() {
-            return Math.round(totalTime / 60).toString().length;
-        }
-
-        function adjustSVG() {
+        (() => {
             const svg = document.querySelector('.progress-circle');
             const element = document.querySelector('.progress-text');
 
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            const svgSize = Math.min(width, height) * 0.8;
+            function adjustSVG() {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                const svgSize = Math.min(width, height) * 0.8;
 
-            const length = getLength();
-            const size = getSize(length);
+                const length = countdownElement.textContent.length;
+                const size = getFontSize(length);
 
-            svg.setAttribute('width', svgSize.toString());
-            svg.setAttribute('height', svgSize.toString());
+                svg.setAttribute('width', svgSize.toString());
+                svg.setAttribute('height', svgSize.toString());
 
-            element.style.fontSize = `${size}rem`;
-        }
+                element.style.fontSize = `${size}rem`;
+            }
 
-        window.addEventListener('resize', adjustSVG);
-        adjustSVG();
+            window.addEventListener('resize', adjustSVG);
+            adjustSVG();
+        })();
     }
 </script>
 
